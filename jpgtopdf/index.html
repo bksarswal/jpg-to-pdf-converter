@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  }
+  
+  .container {
+      max-width: 800px;
+      background: #61cbe3;
+  
+  margin: 0 auto;
+  padding: 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  }
+  
+  .top-banner {
+  background-color:#e0fc09;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  }
+  
+  .header {
+  margin-top: 20px;
+  background-color: #f64ac2;
+  color:#fff;
+  }
+  
+  .header h2{
+  margin-left:6px;
+  }
+  
+  .preview-section {
+  margin-top: 20px;
+  }
+  
+  .footer {
+  margin-top: 50px;
+  margin-bottom:20px;
+  text-align: center;
+  
+  }
+  
+  
+  .container input {
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  color: red;
+  padding: 3px;
+  border: 1px solid red;
+  border-radius: 5px;
+  background-color:#007bff;
+  transition: all 0.5s ease-in-out;
+  margin:8px;
+  }
+  
+  .container input:hover {
+  background-color: #f0f0f0;
+  border-color: #888;
+  }
+  
+  
+  
+  
+  #imagePreview {
+  margin-top: 10px;
+  text-align: center;
+  }
+  
+  button {
+  padding: 10px 20px;
+  margin-left:10px;
+  margin-right:10px;
+  margin-top:15px;
+  margin-bottom:30px;
+  cursor: pointer;
+  color: #fff;
+  border: none;
+  background-color: #111;
+  text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff33ff, 0 0 20px #ff33ff;
+  box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #ff33ff, 0 0 20px #ff33ff;
+  }
+  
+  button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  }
+     footer p{
+       background-color: #333;
+       color: #fff;
+       padding: 10px;
+       text-align: center;
+       position: fixed;
+       bottom: 0;
+       width: 100%;
+   }
+  
+    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JPG to PDF Converter</title>
+    <link rel="stylesheet" href="/style.css">
+   
+  </head>
+  <body>
+    <div class="container">
+      <div class="top-banner">
+        <h1>JPG to PDF Converter</h1>
+      </div>
+      <div class="header">
+        <h2>Upload Your JPG Image</h2>
+        <input type="file" id="fileInput" accept=".jpg, .jpeg" multiple />
+      </div>
+      <div class="preview-section">
+        <h2>Preview</h2>
+        <div id="imagePreview"></div>
+      </div>
+      <div class="footer">
+        <button id="previewBtn">Preview</button>
+        <button id="downloadBtn" disabled>Download PDF</button>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+    <script >
+      
+      document
+        .getElementById("previewBtn")
+        .addEventListener("click", function () {
+          const fileInput = document.getElementById("fileInput");
+          const files = fileInput.files;
+
+          if (files.length > 0) {
+            document.getElementById("imagePreview").innerHTML = "";
+            Array.from(files).forEach((file) => {
+              const reader = new FileReader();
+
+              reader.onload = function (e) {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.maxWidth = "100%";
+                document.getElementById("imagePreview").appendChild(img);
+              };
+
+              reader.readAsDataURL(file);
+            });
+            document.getElementById("downloadBtn").disabled = false;
+          } else {
+            alert("Please select a file.");
+          }
+        });
+
+      document
+        .getElementById("downloadBtn")
+        .addEventListener("click", function () {
+          const images = document
+            .getElementById("imagePreview")
+            .querySelectorAll("img");
+          const pdf = new jsPDF();
+
+          Array.from(images).forEach((img, index) => {
+            const imgData = img.src;
+            // Calculate the width and height to maintain the original aspect ratio
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = img.width;
+            const imgHeight = img.height;
+            const width = pdfWidth;
+            const height = (imgHeight * width) / imgWidth;
+            // Calculate the left and top margins to center the image
+            const left = (pdfWidth - width) / 2;
+            const top = (pdfHeight - height) / 2;
+            // Add a new page for each image after the first one
+            if (index > 0) {
+              pdf.addPage();
+            }
+            pdf.addImage(imgData, "JPEG", left, top, width, height);
+          });
+
+          pdf.save("converted.pdf");
+        });
+    </script>
+  </body>
+</html>
